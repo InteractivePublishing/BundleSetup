@@ -20,24 +20,20 @@ call %~dp0\Setup\utils\var_line_parser %~dp0\setup_vars.txt
 set "AppBundleName=%WinAppBundleName%"
 set "PROGRAMVERSION=%WinProgramVersion%"
 
+@REM #    astr"-macosx-amd64";
 set "astr=-win-amd64_"
 
 set "AppInstaller=%AppBundleName%%astr%%PROGRAMVERSION%.exe"
 
 for /f "delims=" %%F in ('dir /b /s "%~dp0Setup\%AppInstaller%" 2^>nul') do set p=%%F
-
-if not exist %~dp0Setup\%AppInstaller% (
+set "AppInstaller=%p%"
+if not exist %AppInstaller% (
   echo Setup application not found, quiting.
-  echo Missing %~dp0Setup\%AppInstaller%
+  echo Missing %AppInstaller%
   exit /b
 ) else (
   echo Proceeding with installer %AppInstaller%
 )
-
-@REM #    astr"-macosx-amd64";
-
-
-@REM
 
 
 @REM set "BaseInstallPath=C:\InteractivePublishing"
@@ -80,10 +76,10 @@ echo.>%DataUninst%
 for /f "usebackq delims=|" %%f in (`dir /b "%~dp0Data\*.zip"`) do (
   echo Extract - %%f
   @REM 7za <command> [<switches>...] <archive_name> [<file_names>...]
-  echo %sevenZ% x -o"%DataPath%" -y -aos %~dp0%%f >> "%LogPath%"
-  %sevenZ% x -o"%DataPath%" -y -aos %~dp0%%f
-  echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0%%f ^>%DataUninst% >> "%LogPath%"
-  %sevenZ% l -o"%DataPath%" -y -aos %~dp0%%f >>%DataUninst%
+  echo %sevenZ% x -o"%DataPath%" -y -aos %~dp0Data\%%f >> "%LogPath%"
+  %sevenZ% x -o"%DataPath%" -y -aos %~dp0Data\%%f
+  echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0Data\%%f ^>%DataUninst% >> "%LogPath%"
+  %sevenZ% l -o"%DataPath%" -y -aos %~dp0Data\%%f >>%DataUninst%
 )
 
 @Rem get data version somehow
@@ -97,7 +93,7 @@ dir /b  /O-N /AD "%DataPath%\%LibIndex%\v*" > "%DataPath%\%LibIndex%\vtmp.txt"
 @REM Two temp files are used for this purpose, vtmp.txt, and vrdy.txt both of which are removed when done.
 findstr /R "^v[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$" "%DataPath%\%LibIndex%\vtmp.txt" > "%DataPath%\%LibIndex%\vrdy.txt"  && set /p "DATAVERSION="<"%DataPath%\%LibIndex%\vrdy.txt"  & del "%DataPath%\%LibIndex%\vtmp.txt" & del "%DataPath%\%LibIndex%\vrdy.txt"
 if "%DATAVERSION%"=="" (
-  echo Data library Not versioned by folder or version failed to set. Only vYYYY-MM-DD type versions supported.
+  echo Data library Not versioned by folder or version failed to set. Only vYYYY-MM-DD type versions supported. Please notifiy support, and include contents of %LogPath%
   REM exit /b
 )
 REM echo DirectoryVersioning = "%DATAVERSION%"
@@ -198,21 +194,50 @@ if exist %idx_LibConf% (
 )
 
 @REM Silent Install app
-set ip=%~dp0Setup\%AppInstaller%
 set InstallPath=%AppPath%\%PROGRAMVERSION%
-if not exist %ip% (
-  echo App installer missing! "%ip%"
-)
-echo %ip% /S /D=%InstallPath% >> "%LogPath%"
+echo %AppInstaller% /S /D=%InstallPath% >> "%LogPath%"
 if not exist %InstallPath% (
   echo "Installing app to %InstallPath%"
-  start /b /wait %ip% /S /D=%InstallPath%
+  start /b /wait %AppInstaller% /S /D=%InstallPath%
 ) else (
   echo app already installed at "%InstallPath%"
 )
-
 echo if not exist %InstallPath%\Uninstall.exe del %AppPath%\Uninstall%PROGRAMVERSION%.bat ^& exit /b > %AppPath%\Uninstall%PROGRAMVERSION%.bat
+
+@REM Add any patch data to application.
+@REM Prepared for multiple patches just in case.
+for /f "usebackq delims=|" %%f in (`dir /b "%~dp0Setup\AV_QT5_patch*.7z"`) do (
+  echo Extract - %%f
+  @REM 7za <command> [<switches>...] <archive_name> [<file_names>...]
+  echo %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Setup\%%f >> "%LogPath%"
+  %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Setup\%%f
+  @REM if patches were better formed we could use the 7z listing output to track down their contents and remove it.
+  @REM echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0Setup\%%f ^>%PatchUninst% >> "%LogPath%"
+  @REM %sevenZ% l -o"%DataPath%" -y -aos %~dp0Setup\%%f >>%PatchUninst%
+)
+@REM AV_QT5_bundle is a magic part of our patches not visible until they're extracted.
+@REM at some point we'll fix that.
+@REM this takes patch data out of a temp folder and puts it in the application.
+for /f "usebackq delims=|" %%f in (`dir /b "%AppPath%\temp\AV_QT5_bundle\*"`) do (
+  echo Patching with - %%f
+  if not exist %InstallPath%\bin\%%f (
+    echo move %AppPath%\temp\AV_QT5_bundle\%%f %InstallPath%\bin >> "%LogPath%"
+    move %AppPath%\temp\AV_QT5_bundle\%%f %InstallPath%\bin
+  ) else (
+    rd /s /q %AppPath%\temp\AV_QT5_bundle\%%f >> "%LogPath%"
+    rd /s /q %AppPath%\temp\AV_QT5_bundle\%%f
+  )
+  echo rd /s /q %InstallPath%\bin\%%f >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+)
+echo rd /s /q %AppPath%\temp >> "%LogPath%"
+rd /s /q %AppPath%\temp
+
+@REM run the normal uninstaller
 echo %InstallPath%\Uninstall %InstallPath% >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+@REM run our batch file again after, this makes our unstall bat recursive,
+@REM but it removes itself when sucessful so that'll stop recursion.
+echo %AppPath%\Uninstall%PROGRAMVERSION%.bat >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+
 
 @REM Create shortcut.
 IF "!DATAVERSION!"=="" (
