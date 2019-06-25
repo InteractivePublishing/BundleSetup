@@ -1,1 +1,1 @@
-LibItemNumber=IP_item-0000 LibIndex=000_IndexName MacProgramVersion=20140101 MacAppBundleName=AtlasViewer-0.4.0-abcdefg WinProgramVersion=20140101 WinAppBundleName=AtlasViewer-0.4.0-abcdefg  ENDECHO
+BaseInstallPath=c:\IP LibItemNumber=IP_item-0000 LibIndex=000_IndexName MacProgramVersion=20140101 MacAppBundleName=AtlasViewer-0.4.0-abcdefg WinProgramVersion=20140101 WinAppBundleName=AtlasViewer-0.4.0-abcdefg  ENDECHO
