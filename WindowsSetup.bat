@@ -25,8 +25,8 @@ set "astr=-win-amd64_"
 
 set "AppInstaller=%AppBundleName%%astr%%PROGRAMVERSION%.exe"
 
-for /f "delims=" %%F in ('dir /b /s "%~dp0Setup\%AppInstaller%" 2^>nul') do set p=%%F
-set "AppInstaller=%p%"
+for /f "delims=" %%F in ('dir /b /s "%~dp0Setup\%AppInstaller%" 2^>nul') do set AppInstaller=%%F
+@REM set "AppInstaller=%p%"
 if not exist %AppInstaller% (
   echo Setup application not found, quiting.
   echo Missing %AppInstaller%
@@ -71,15 +71,15 @@ echo Open Install log  >> "%LogPath%"
 date /T  >> "%LogPath%"
 time /T  >> "%LogPath%"
 
-@REM Extract data
+@REM Extract data WARNING THIS DOESNT UPDATE ANY EXISTING FILE!
 echo.>%DataUninst%
-for /f "usebackq delims=|" %%f in (`dir /b "%~dp0Data\*.zip"`) do (
-  echo Extract - %%f
+for /f "usebackq delims=|" %%F in (`dir /b "%~dp0Data\*.zip"`) do (
+  echo Extract - %%F
   @REM 7za <command> [<switches>...] <archive_name> [<file_names>...]
-  echo %sevenZ% x -o"%DataPath%" -y -aos %~dp0Data\%%f >> "%LogPath%"
-  %sevenZ% x -o"%DataPath%" -y -aos %~dp0Data\%%f
-  echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0Data\%%f ^>%DataUninst% >> "%LogPath%"
-  %sevenZ% l -o"%DataPath%" -y -aos %~dp0Data\%%f >>%DataUninst%
+  echo %sevenZ% x -o"%DataPath%" -y -aos %~dp0Data\%%F >> "%LogPath%"
+  %sevenZ% x -o"%DataPath%" -y -aos %~dp0Data\%%F
+  echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0Data\%%F ^>%DataUninst% >> "%LogPath%"
+  %sevenZ% l -o"%DataPath%" -y -aos %~dp0Data\%%F >>%DataUninst%
 )
 
 @Rem get data version somehow
@@ -128,7 +128,7 @@ if exist %idx_LibConf% (
             echo Same version, no update needed.
             echo.
         ) else (
-            echo "Data Update detected. new is %DATAVERSION% old is !Version! "
+            echo Data Update detected. new is %DATAVERSION% old is !Version!
 
             @REM echo "mv \"$idx_LibConf\"  \"${idx_LibConf%.*}.$v.conf\"" >> $LogPath;
             @REM mv "$idx_LibConf"  "${idx_LibConf%.*}.$v.conf"
@@ -197,47 +197,60 @@ if exist %idx_LibConf% (
 set InstallPath=%AppPath%\%PROGRAMVERSION%
 echo %AppInstaller% /S /D=%InstallPath% >> "%LogPath%"
 if not exist %InstallPath% (
-  echo "Installing app to %InstallPath%"
+  echo Installing app to %InstallPath%
   start /b /wait %AppInstaller% /S /D=%InstallPath%
 ) else (
   echo app already installed at "%InstallPath%"
 )
-echo if not exist %InstallPath%\Uninstall.exe del %AppPath%\Uninstall%PROGRAMVERSION%.bat ^& exit /b > %AppPath%\Uninstall%PROGRAMVERSION%.bat
+
+echo echo Uninstall cleanup %PROGRAMVERSION% > %AppPath%\Uninstall%PROGRAMVERSION%.bat
+echo if not exist %InstallPath%\Uninstall.exe del %AppPath%\Uninstall%PROGRAMVERSION%.bat ^& exit /b >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 
 @REM Add any patch data to application.
 @REM Prepared for multiple patches just in case.
-for /f "usebackq delims=|" %%f in (`dir /b "%~dp0Setup\AV_QT5_patch*.7z"`) do (
-  echo Extract - %%f
+for /f "usebackq delims=|" %%F in (`dir /b "%~dp0Setup\AV_QT5_patch*.7z"`) do (
+  echo Extract - %%F
   @REM 7za <command> [<switches>...] <archive_name> [<file_names>...]
-  echo %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Setup\%%f >> "%LogPath%"
-  %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Setup\%%f
+  echo %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Setup\%%F >> "%LogPath%"
+  %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Setup\%%F
   @REM if patches were better formed we could use the 7z listing output to track down their contents and remove it.
-  @REM echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0Setup\%%f ^>%PatchUninst% >> "%LogPath%"
-  @REM %sevenZ% l -o"%DataPath%" -y -aos %~dp0Setup\%%f >>%PatchUninst%
+  @REM echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0Setup\%%F ^>%PatchUninst% >> "%LogPath%"
+  @REM %sevenZ% l -o"%DataPath%" -y -aos %~dp0Setup\%%F >>%PatchUninst%
 )
 @REM AV_QT5_bundle is a magic part of our patches not visible until they're extracted.
 @REM at some point we'll fix that.
 @REM this takes patch data out of a temp folder and puts it in the application.
-for /f "usebackq delims=|" %%f in (`dir /b "%AppPath%\temp\AV_QT5_bundle\*"`) do (
-  echo Patching with - %%f
-  if not exist %InstallPath%\bin\%%f (
-    echo move %AppPath%\temp\AV_QT5_bundle\%%f %InstallPath%\bin >> "%LogPath%"
-    move %AppPath%\temp\AV_QT5_bundle\%%f %InstallPath%\bin
+@REM also expands our uninstall to remove those folders as we go.
+for /f "usebackq delims=|" %%F in (`dir /b "%AppPath%\temp\AV_QT5_bundle\*"`) do (
+  echo Patching with - %%F
+  if not exist %InstallPath%\bin (
+    mkdir %InstallPath%\bin )
+  if not exist %InstallPath%\bin\%%F (
+    echo move %AppPath%\temp\AV_QT5_bundle\%%F %InstallPath%\bin\%%F >> "%LogPath%"
+    move %AppPath%\temp\AV_QT5_bundle\%%F %InstallPath%\bin\%%F
   ) else (
-    rd /s /q %AppPath%\temp\AV_QT5_bundle\%%f >> "%LogPath%"
-    rd /s /q %AppPath%\temp\AV_QT5_bundle\%%f
+    rd /s /q %AppPath%\temp\AV_QT5_bundle\%%F >> "%LogPath%"
+    rd /s /q %AppPath%\temp\AV_QT5_bundle\%%F
   )
-  echo rd /s /q %InstallPath%\bin\%%f >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+  echo rd /s /q %InstallPath%\bin\%%F >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 )
 echo rd /s /q %AppPath%\temp >> "%LogPath%"
 rd /s /q %AppPath%\temp
 
 @REM run the normal uninstaller
-echo %InstallPath%\Uninstall %InstallPath% >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+@REM using fancy option and start /wait to hold the terminal while it runs
+echo echo Running uninstaller, Please wait. >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+echo start /wait %InstallPath%\Uninstall.exe /S _?=%InstallPath% >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+@REM get directory count
+echo FOR /F "usebackq tokens=*" %%%%F IN (`call dir_count %AppPath%\%PROGRAMVERSION% `) DO ( set dir_count=%%%%F ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+echo if %%dir_count%% LEQ 1 ( del %AppPath%\%PROGRAMVERSION%\Uninstall.exe & rmdir %AppPath%\%PROGRAMVERSION% ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 @REM run our batch file again after, this makes our unstall bat recursive,
 @REM but it removes itself when sucessful so that'll stop recursion.
-echo %AppPath%\Uninstall%PROGRAMVERSION%.bat >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
-
+echo call %AppPath%\Uninstall%PROGRAMVERSION%.bat >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+@REM copy our little function to get directory count so we can use it.
+if not exist %AppPath%\dir_count.bat (
+  copy %~dp0Setup\utils\dir_count.bat  %AppPath%\dir_count.bat
+)
 
 @REM Create shortcut.
 IF "!DATAVERSION!"=="" (
@@ -264,7 +277,7 @@ if "%LibItemNumber%"=="" (
 set "StartShortcut=%BaseInstallPath%\%LibItemString%%LibName%_a%PROGRAMVERSION%%DataVersionString%"
 echo %~dp0Setup\utils\shortcut.bat %InstallPath%\AtlasViewer.exe %InstallPath% InteractivePublishingDataViewer "--ndLibrary %DataPathAlt%/%LibIndex%" >>%LogPath%
 if not exist %StartShortcut%.lnk (
-  echo "Making lib link to %LibItemString%%LibName%"
+  echo Making lib link to %LibItemString%%LibName%
   echo continue in
   call %~dp0Setup\utils\shortcut.bat %InstallPath%\AtlasViewer.exe %InstallPath% InteractivePublishingDataViewer "--ndLibrary %DataPathAlt%/%LibIndex%"
   echo move %InstallPath%\AtlasViewer.lnk %StartShortcut%.lnk >> %LogPath%
