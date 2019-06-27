@@ -19,12 +19,14 @@ call %~dp0\Setup\utils\var_line_parser %~dp0\setup_vars.txt
 @REM set "LibIndex=000Mouse_Brain"
 set "AppBundleName=%WinAppBundleName%"
 set "PROGRAMVERSION=%WinProgramVersion%"
+@REM set WinExtensionBundle=SLicer-4x1a23-20101010
 
 @REM #    astr"-macosx-amd64";
 set "astr=-win-amd64_"
 
 set "AppInstaller=%AppBundleName%%astr%%PROGRAMVERSION%.exe"
 
+@REM we use a find for the appinstaller because its probably hiding in a subdirectory.
 for /f "delims=" %%F in ('dir /b /s "%~dp0Setup\%AppInstaller%" 2^>nul') do set AppInstaller=%%F
 @REM set "AppInstaller=%p%"
 if not exist %AppInstaller% (
@@ -34,6 +36,9 @@ if not exist %AppInstaller% (
 ) else (
   echo Proceeding with installer %AppInstaller%
 )
+@REM find the extensions,
+@REM we may get fancy and put these in some semblance of order, that is why we're using the find instead of just setting the path to Setup\budnelename.7z
+for /f "delims=" %%F in ('dir /b /s "%~dp0Setup\%WinExtensionBundle%.7z" 2^>nul') do set ExtBundleFile=%%F
 
 
 @REM set "BaseInstallPath=C:\InteractivePublishing"
@@ -72,6 +77,7 @@ date /T  >> "%LogPath%"
 time /T  >> "%LogPath%"
 
 @REM Extract data WARNING THIS DOESNT UPDATE ANY EXISTING FILE!
+@REM NONE OF OUR 7zip COMMANDS UPDATE EXISTING! ( switch to zip?)
 echo.>%DataUninst%
 for /f "usebackq delims=|" %%F in (`dir /b "%~dp0Data\*.zip"`) do (
   echo Extract - %%F
@@ -158,7 +164,7 @@ if not exist %idx_LibConf% (
     echo ERROR setting up lib! missing "%idx_LibConf%"!>> "%LogPath%"
   )
 )
-@REM Clean lib of whitesepace then,
+@REM Clean lib.conf of whitesepace then,
 @REM Get LibName and DATAVERSION from data for use with the program shortcut.
 if exist %idx_LibConf% (
   call %~dp0\Setup\utils\remove_blanks %idx_LibConf%
@@ -202,7 +208,21 @@ if not exist %InstallPath% (
 ) else (
   echo app already installed at "%InstallPath%"
 )
+@REM unpack extensions
+@REM warning, its expected the zip extracts to a folder named the same as the file.
+set ExtPath=%AppPath%\%WinExtensionBundle%
+if not exist %ExtPath% (
+  echo Unpacking extensions to %ExtPath%
+  @REM :::::: start /b /wait %AppInstaller% /S /D=%ExtPath%
+  echo %sevenZ% x -o"%AppPath%" -y -aos %ExtBundleFile% >> "%LogPath%"
+  %sevenZ% x -o"%AppPath%" -y -aos %ExtBundleFile%
+) else (
+  echo extensions already unpacked at "%ExtPath%"
+)
+@REM leave a dropping in the ext path connecting our programversion
+echo . > %ExtPath%\%PROGRAMVERSION%.ver
 
+@REM open our unstall script with info, and a remove self if its been run before.
 echo echo Uninstall cleanup %PROGRAMVERSION% > %AppPath%\Uninstall%PROGRAMVERSION%.bat
 echo if not exist %InstallPath%\Uninstall.exe del %AppPath%\Uninstall%PROGRAMVERSION%.bat ^& exit /b >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 
@@ -232,24 +252,68 @@ for /f "usebackq delims=|" %%F in (`dir /b "%AppPath%\temp\AV_QT5_bundle\*"`) do
     rd /s /q %AppPath%\temp\AV_QT5_bundle\%%F >> "%LogPath%"
     rd /s /q %AppPath%\temp\AV_QT5_bundle\%%F
   )
+  @REM append this to the uninstaller
   echo rd /s /q %InstallPath%\bin\%%F >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 )
+@REM remove the temp directory so we dont leave excess mess
 echo rd /s /q %AppPath%\temp >> "%LogPath%"
 rd /s /q %AppPath%\temp
 
-@REM run the normal uninstaller
+@REM add "run the normal uninstaller"
 @REM using fancy option and start /wait to hold the terminal while it runs
 echo echo Running uninstaller, Please wait. >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 echo start /wait %InstallPath%\Uninstall.exe /S _?=%InstallPath% >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
-@REM get directory count
-echo FOR /F "usebackq tokens=*" %%%%F IN (`call dir_count %AppPath%\%PROGRAMVERSION% `) DO ( set dir_count=%%%%F ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+@REM get directory count to see if the normal uninstaller succeeded.(success is only uninstall.exe still exists)
+echo FOR /F "usebackq tokens=*" %%%%F IN (`call %%~dp0dir_count %AppPath%\%PROGRAMVERSION% `) DO ( set dir_count=%%%%F ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 echo if %%dir_count%% LEQ 1 ( del %AppPath%\%PROGRAMVERSION%\Uninstall.exe & rmdir %AppPath%\%PROGRAMVERSION% ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+@REM TODO finish extension handling here.
+@REM remove the ver dropping in extensions so we know when its safe to clean up.
+echo del %ExtPath%\%PROGRAMVERSION%.ver >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+@REM something like if no .ver files found in this extension folder, remove the extension folder.
+
 @REM run our batch file again after, this makes our unstall bat recursive,
 @REM but it removes itself when sucessful so that'll stop recursion.
 echo call %AppPath%\Uninstall%PROGRAMVERSION%.bat >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 @REM copy our little function to get directory count so we can use it.
 if not exist %AppPath%\dir_count.bat (
   copy %~dp0Setup\utils\dir_count.bat  %AppPath%\dir_count.bat
+)
+
+@REM install the baseline settings and clean them up.
+@REM This gets rather messy with different versions of things sorta sharing the settings files.
+@REM we have to capture our settinf filename per application to avoid madness.
+@REM so once they're in place we'll kindly refuse to overwrite them, and wont add them to the uninstall.
+@REM run application to generate the vers specific file
+if not exist %AppPath%\%PROGRAMVERSION%\settings.log (
+  call %AppPath%\%PROGRAMVERSION%\AtlasViewer.exe --no-splash --no-main-window --exit-after-startup
+  echo waiting for settings init to finish...
+  timeout 3
+  setlocal enabledelayedexpansion
+  move %APPDATA%\CIVM\AtlasViewer.ini %TEMP%\CIVM_AtlasViewer.ini
+  for /f %%F in ('dir /b/a-d/od/t:c %APPDATA%\CIVM\') do set DESTSETTINGS=%%F
+  @REM echo The most recently created file is !DESTSETTINGS!
+  @REM timeout 30
+  move %TEMP%\CIVM_AtlasViewer.ini  %APPDATA%\CIVM\AtlasViewer.ini
+  if not "!DESTSETTINGS!"=="" (
+    echo !DESTSETTINGS! > %AppPath%\%PROGRAMVERSION%\settings.log
+    @REM copy %~dp0Setup\Settings\AtlasViewer-GITVER.ini %APPDATA%\!DESTSETTINGS!
+    @REM replace EXTENSION_PATH with %ExtPath%
+    @REM this could be part of a solution, findstr /l /c:EXTENSION_PATH %ExtPath%
+    @REM need to swap slashes in the path here
+    set "ExtPathS=%ExtPath:\=/%"
+    @REM echo converted %ExtPath% to !ExtPathS!
+    echo call %~dp0Setup\utils\find_and_replace %~dp0Setup\Settings\AtlasViewer-GITVER.ini EXTENSION_PATH !ExtPathS! %PROGRAMDATA%\CIVM\!DESTSETTINGS! >> "%LogPath%"
+    call %~dp0Setup\utils\find_and_replace %~dp0Setup\Settings\AtlasViewer-GITVER.ini EXTENSION_PATH !ExtPathS! %PROGRAMDATA%\CIVM\!DESTSETTINGS!
+    @REM remove original now that we have a good one
+    echo del %APPDATA%\CIVM\!DESTSETTINGS! >> "%LogPath%"
+    del %APPDATA%\CIVM\!DESTSETTINGS!
+    echo copy %PROGRAMDATA%\CIVM\!DESTSETTINGS! %APPDATA%\CIVM\!DESTSETTINGS! >>  "%LogPath%"
+    copy %PROGRAMDATA%\CIVM\!DESTSETTINGS! %APPDATA%\CIVM\!DESTSETTINGS!
+  ) else (
+    echo Problem getting settings file, Looked in %APPDATA%\CIVM\
+    timeout 5
+  )
+  endlocal
 )
 
 @REM Create shortcut.
