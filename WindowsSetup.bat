@@ -203,7 +203,7 @@ if exist %idx_LibConf% (
 set InstallPath=%AppPath%\%PROGRAMVERSION%
 echo %AppInstaller% /S /D=%InstallPath% >> "%LogPath%"
 if not exist %InstallPath% (
-  echo Installing app to %InstallPath%
+  echo Installing app to %InstallPath% Please wait ...
   start /b /wait %AppInstaller% /S /D=%InstallPath%
 ) else (
   echo app already installed at "%InstallPath%"
@@ -223,7 +223,7 @@ if not exist %ExtPath% (
 echo . > %ExtPath%\%PROGRAMVERSION%.ver
 
 @REM open our unstall script with info, and a remove self if its been run before.
-echo echo Uninstall cleanup %PROGRAMVERSION% > %AppPath%\Uninstall%PROGRAMVERSION%.bat
+echo @echo off ^& echo Uninstall cleanup %PROGRAMVERSION% > %AppPath%\Uninstall%PROGRAMVERSION%.bat
 echo if not exist %InstallPath%\Uninstall.exe del %AppPath%\Uninstall%PROGRAMVERSION%.bat ^& exit /b >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 
 @REM Add any patch data to application.
@@ -263,17 +263,16 @@ rd /s /q %AppPath%\temp
 @REM using fancy option and start /wait to hold the terminal while it runs
 echo echo Running uninstaller, Please wait. >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 echo start /wait %InstallPath%\Uninstall.exe /S _?=%InstallPath% >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+@REM remove the ver dropping in extensions so we know when its safe to clean up.
+@REM something like if no .ver files found in this extension folder, remove the extension folder.
+echo del %ExtPath%\%PROGRAMVERSION%.ver >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 @REM get directory count to see if the normal uninstaller succeeded.(success is only uninstall.exe still exists)
 echo FOR /F "usebackq tokens=*" %%%%F IN (`call %%~dp0dir_count %AppPath%\%PROGRAMVERSION% `) DO ( set dir_count=%%%%F ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
-echo if %%dir_count%% LEQ 1 ( del %AppPath%\%PROGRAMVERSION%\Uninstall.exe & rmdir %AppPath%\%PROGRAMVERSION% ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
-@REM TODO finish extension handling here.
-@REM remove the ver dropping in extensions so we know when its safe to clean up.
-echo del %ExtPath%\%PROGRAMVERSION%.ver >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
-@REM something like if no .ver files found in this extension folder, remove the extension folder.
-
+@REM if uninstall was sucessful, remove the script,
+@REM and the application directory(which is now empty)
 @REM run our batch file again after, this makes our unstall bat recursive,
 @REM but it removes itself when sucessful so that'll stop recursion.
-echo call %AppPath%\Uninstall%PROGRAMVERSION%.bat >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
+echo if %%dir_count%% LEQ 1 ( del %AppPath%\%PROGRAMVERSION%\Uninstall.exe ^& rmdir %AppPath%\%PROGRAMVERSION% ^& call %AppPath%\Uninstall%PROGRAMVERSION%.bat ) else ( echo Trailing files uninstalling %AppPath%\%PROGRAMVERSION%, it must be removed manually ^& timeout 15 ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 @REM copy our little function to get directory count so we can use it.
 if not exist %AppPath%\dir_count.bat (
   copy %~dp0Setup\utils\dir_count.bat  %AppPath%\dir_count.bat
@@ -284,7 +283,7 @@ if not exist %AppPath%\dir_count.bat (
 @REM we have to capture our settinf filename per application to avoid madness.
 @REM so once they're in place we'll kindly refuse to overwrite them, and wont add them to the uninstall.
 @REM run application to generate the vers specific file
-if not exist %AppPath%\%PROGRAMVERSION%\settings.log (
+if not exist %AppPath%\%PROGRAMVERSION%_settings.log (
   call %AppPath%\%PROGRAMVERSION%\AtlasViewer.exe --no-splash --no-main-window --exit-after-startup
   echo waiting for settings init to finish...
   timeout 3
@@ -295,7 +294,7 @@ if not exist %AppPath%\%PROGRAMVERSION%\settings.log (
   @REM timeout 30
   move %TEMP%\CIVM_AtlasViewer.ini  %APPDATA%\CIVM\AtlasViewer.ini
   if not "!DESTSETTINGS!"=="" (
-    echo !DESTSETTINGS! > %AppPath%\%PROGRAMVERSION%\settings.log
+    echo !DESTSETTINGS! > %AppPath%\%PROGRAMVERSION%_settings.log
     @REM copy %~dp0Setup\Settings\AtlasViewer-GITVER.ini %APPDATA%\!DESTSETTINGS!
     @REM replace EXTENSION_PATH with %ExtPath%
     @REM this could be part of a solution, findstr /l /c:EXTENSION_PATH %ExtPath%
