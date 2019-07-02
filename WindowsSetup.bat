@@ -222,7 +222,7 @@ if not exist %ExtPath% (
 @REM leave a dropping in the ext path connecting our programversion
 echo . > %ExtPath%\%PROGRAMVERSION%.ver
 
-@REM open our unstall script with info, and a remove self if its been run before.
+@REM open our uninstall script with info, and a remove self if its been run before.
 echo @echo off ^& echo Uninstall cleanup %PROGRAMVERSION% > %AppPath%\Uninstall%PROGRAMVERSION%.bat
 echo if not exist %InstallPath%\Uninstall.exe del %AppPath%\Uninstall%PROGRAMVERSION%.bat ^& exit /b >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 
@@ -308,6 +308,10 @@ if not exist %AppPath%\%PROGRAMVERSION%_settings.log (
     del %APPDATA%\CIVM\!DESTSETTINGS!
     echo copy %PROGRAMDATA%\CIVM\!DESTSETTINGS! %APPDATA%\CIVM\!DESTSETTINGS! >>  "%LogPath%"
     copy %PROGRAMDATA%\CIVM\!DESTSETTINGS! %APPDATA%\CIVM\!DESTSETTINGS!
+    if not exist %AppPath%\%PROGRAMVERSION%S (
+        mkdir %AppPath%\%PROGRAMVERSION%S )
+    echo xcopy /Y %PROGRAMDATA%\CIVM\*.ini %AppPath%\%PROGRAMVERSION%S >> "%LogPath%"
+    xcopy /Y %PROGRAMDATA%\CIVM\*.ini %AppPath%\%PROGRAMVERSION%S
   ) else (
     echo Problem getting settings file, Looked in %APPDATA%\CIVM\
     timeout 5
