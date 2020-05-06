@@ -1,0 +1,69 @@
+
+Use:
+Full documentation on Slicer, visit
+https://www.slicer.org/wiki/Documentation/4.8
+(Not all modules available.)
+
+HINT: Hold the shift key on your keyboard and experiment with your mouse.
+
+Advanced users can access the full 3D Slicer functionality by right clicking
+on the main toolbar, and enabling the parts you're looking for.
+
+To access the 3D Slicer settings, in three steps.
+One: open python terminal using key combo shortcut "ctrl+3"
+Two: copy/paste the following into the open pyton console, and press enter to
+open settings dialog.
+slicer.app.settingsDialog().show();
+Three: close python terminal using key combo shortcut "ctrl+3"
+
+Limitations and Known issues:
+First load of data is slow, windows may offer to close the program for you.
+
+Slicer convention places object left on image right.
+
+The in "Registration" protocol "UserData" view does not change angle with the
+slider. The expectation is you want to hold it's orientation constant. For
+data in good alignment (especially examples) this can be confusing.
+
+Enabling labels+models by clicking is somewhat slow.
+
+Tractography display and differentation is difficult.
+When enabling a new streamline set, be sure to disable the previous one first.
+If you forget, you will have to click a second time on the new streamline set,
+and the previous one will still be marked as visible.
+
+3D protocol does not fully initialize when first loaded.
+The work around is to load 3D, switch to Registration, and then back to 3D.
+
+
+Installation:
+If you should accdentially abort the installation,
+Assuming you have no other data+viewer bundless installed you should clear the
+whole installation, settings and broken temp files.
+1) Delete the whole BaseInstallPath, the default is:  c:\IP\
+2) Delete the settings folder:  C:\ProgramData\CIVM
+If you're having trouble finding this folder, you can use open your
+ProgramData folder with gui folder explorer and delete CIVM folder as follows:
+Open a cmd prompt terminal,
+type  "explorer %ProgramData%"  and press enter.
+(omit the quotes)
+
+3) Delete the individual settings from %AppData%
+Open a cmd prompt terminal,
+type  "dir %AppData%\CIVM"  and press enter.
+(omit the quotes)
+(if result ends with "File Not Found" skip to 4)
+Open your AppData folder with gui folder explorer and delete CIVM folder
+>  explorer %AppData%
+
+4) Validate temp settings are not found using
+type  "dir %TEMP%\CIVM_AtlasViewer.ini"  and press enter.
+(omit the quotes)
+(expected result is a bunch of stuff ending with "File Not Found")
+delete the file if its found, to use the gui you can open the %TEMP% folder with the cmd prompt like the others.
+
+
+Settings Reset:
+If you should select the permanent confirmation checkbox and wish to reset it,
+follow installation help steps 2,3,4 as above.
+Then run the appropriate bundle setup script.

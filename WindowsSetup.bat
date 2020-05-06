@@ -368,5 +368,5 @@ echo To uninstall application, find the uninstall shortcut from startmenu,
 echo   OR
 echo run %AppPath%\Uninstall%PROGRAMVERSION%.bat
 echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-timeout 15
+timeout 3600
 exit /b
