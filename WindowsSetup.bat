@@ -1,19 +1,21 @@
 @echo off
-if %PROCESSOR_ARCHITECTURE% EQU AMD64 (
-  @REM echo AMD64%PROCESSOR_ARCHITECTURE%
-  set "sevenZ=%~dp0Setup\7z1805-extra\x64\7za.exe"
-) else (
-  @REM echo is32%PROCESSOR_ARCHITECTURE%
-  echo Warning AtlasViewer only compiled for 64-bit architecture.
-  set "sevenZ=%~dp0Setup\7z1805-extra\7za.exe"
-  timeout 30;
-  exit /b
-)
 
 @REM Get version from index later...
 @REM AppInstaller, LibItemNumber, and LibIndex will probably need to be specified.
 @REM a var_line txt file will probably be best, and this script will look for that.
-call %~dp0\Setup\utils\var_line_parser %~dp0\setup_vars.txt
+call %~dp0\Components\utils\var_line_parser %~dp0\setup_vars.txt
+
+if %PROCESSOR_ARCHITECTURE% EQU AMD64 (
+  @REM echo AMD64%PROCESSOR_ARCHITECTURE%
+  set "sevenZ=%~dp0Components\%sevenZname%\x64\7za.exe"
+) else (
+  @REM echo is32%PROCESSOR_ARCHITECTURE%
+  echo Warning AtlasViewer only compiled for 64-bit architecture.
+  set "sevenZ=%~dp0Components\%sevenZname%\7za.exe"
+  timeout 30;
+  exit /b
+)
+
 
 @REM set "LibItemNumber=CIVM-17001"
 @REM set "LibIndex=000Mouse_Brain"
@@ -27,7 +29,7 @@ set "astr=-win-amd64_"
 set "AppInstaller=%AppBundleName%%astr%%PROGRAMVERSION%.exe"
 
 @REM we use a find for the appinstaller because its probably hiding in a subdirectory.
-for /f "delims=" %%F in ('dir /b /s "%~dp0Setup\%AppInstaller%" 2^>nul') do set AppInstaller=%%F
+for /f "delims=" %%F in ('dir /b /s "%~dp0Components\%AppInstaller%" 2^>nul') do set AppInstaller=%%F
 @REM set "AppInstaller=%p%"
 if not exist %AppInstaller% (
   echo Setup application not found, quiting.
@@ -37,8 +39,8 @@ if not exist %AppInstaller% (
   echo Proceeding with installer %AppInstaller%
 )
 @REM find the extensions,
-@REM we may get fancy and put these in some semblance of order, that is why we're using the find instead of just setting the path to Setup\budnelename.7z
-for /f "delims=" %%F in ('dir /b /s "%~dp0Setup\%WinExtensionBundle%.7z" 2^>nul') do set ExtBundleFile=%%F
+@REM we may get fancy and put these in some semblance of order, that is why we're using the find instead of just setting the path to Components\budnelename.7z
+for /f "delims=" %%F in ('dir /b /s "%~dp0Components\%WinExtensionBundle%.7z" 2^>nul') do set ExtBundleFile=%%F
 
 
 @REM set "BaseInstallPath=C:\InteractivePublishing"
@@ -122,7 +124,7 @@ if exist %idx_LibConf% (
     for /f "usebackq" %%A in ("%DataPath%\%LibIndex%\ltmp.txt") do set var=!var! %%A
     echo !var!  ENDECHO >%DataPath%\%LibIndex%\libvars.txt
     @REM Get the lib vars out of the temp file, use handy dandy varline parser.
-    call %~dp0\Setup\utils\var_line_parser %DataPath%\%LibIndex%\libvars.txt
+    call %~dp0\Components\utils\var_line_parser %DataPath%\%LibIndex%\libvars.txt
 
     @REM del  %DataPath%\%LibIndex%\libvars.txt %DataPath%\%LibIndex%\ltmp.txt
     echo Got vo!Version!, and vp!Path!
@@ -167,7 +169,7 @@ if not exist %idx_LibConf% (
 @REM Clean lib.conf of whitesepace then,
 @REM Get LibName and DATAVERSION from data for use with the program shortcut.
 if exist %idx_LibConf% (
-  call %~dp0\Setup\utils\remove_blanks %idx_LibConf%
+  call %~dp0\Components\utils\remove_blanks %idx_LibConf%
   @REM del %idx_LibConf%
   @REM move %idx_LibConf%.clean %idx_LibConf%
   @REM Get true lib name from file %idx_LibConf%
@@ -182,8 +184,8 @@ if exist %idx_LibConf% (
   for /f "usebackq" %%A in ("%DataPath%\%LibIndex%\ltmp.txt") do set var=!var! %%A
   echo !var!  ENDECHO >%DataPath%\%LibIndex%\libvars.txt
 
-  @REM echo call %~dp0Setup\utils\var_line_parser %DataPath%\%LibIndex%\libvars.txt
-  call %~dp0\Setup\utils\var_line_parser %DataPath%\%LibIndex%\libvars.txt
+  @REM echo call %~dp0Components\utils\var_line_parser %DataPath%\%LibIndex%\libvars.txt
+  call %~dp0\Components\utils\var_line_parser %DataPath%\%LibIndex%\libvars.txt
   REM echo ver=!Version!
   REM echo lib=!LibName!
   del  %DataPath%\%LibIndex%\libvars.txt %DataPath%\%LibIndex%\ltmp.txt
@@ -228,14 +230,14 @@ echo if not exist %InstallPath%\Uninstall.exe del %AppPath%\Uninstall%PROGRAMVER
 
 @REM Add any patch data to application.
 @REM Prepared for multiple patches just in case.
-for /f "usebackq delims=|" %%F in (`dir /b "%~dp0Setup\AV_QT5_patch*.7z"`) do (
+for /f "usebackq delims=|" %%F in (`dir /b "%~dp0Components\AV_QT5_patch*.7z"`) do (
   echo Extract - %%F
   @REM 7za <command> [<switches>...] <archive_name> [<file_names>...]
-  echo %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Setup\%%F >> "%LogPath%"
-  %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Setup\%%F
+  echo %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Components\%%F >> "%LogPath%"
+  %sevenZ% x -o"%AppPath%\temp" -y -aos %~dp0Components\%%F
   @REM if patches were better formed we could use the 7z listing output to track down their contents and remove it.
-  @REM echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0Setup\%%F ^>%PatchUninst% >> "%LogPath%"
-  @REM %sevenZ% l -o"%DataPath%" -y -aos %~dp0Setup\%%F >>%PatchUninst%
+  @REM echo %sevenZ% l -o"%DataPath%" -y -aos %~dp0Components\%%F ^>%PatchUninst% >> "%LogPath%"
+  @REM %sevenZ% l -o"%DataPath%" -y -aos %~dp0Components\%%F >>%PatchUninst%
 )
 @REM AV_QT5_bundle is a magic part of our patches not visible until they're extracted.
 @REM at some point we'll fix that.
@@ -275,7 +277,7 @@ echo FOR /F "usebackq tokens=*" %%%%F IN (`call %%~dp0dir_count %AppPath%\%PROGR
 echo if %%dir_count%% LEQ 1 ( del %AppPath%\%PROGRAMVERSION%\Uninstall.exe ^& rmdir %AppPath%\%PROGRAMVERSION% ^& call %AppPath%\Uninstall%PROGRAMVERSION%.bat ) else ( echo Trailing files uninstalling %AppPath%\%PROGRAMVERSION%, it must be removed manually ^& timeout 15 ) >> %AppPath%\Uninstall%PROGRAMVERSION%.bat
 @REM copy our little function to get directory count so we can use it.
 if not exist %AppPath%\dir_count.bat (
-  copy %~dp0Setup\utils\dir_count.bat  %AppPath%\dir_count.bat
+  copy %~dp0Components\utils\dir_count.bat  %AppPath%\dir_count.bat
 )
 
 @REM install the baseline settings and clean them up.
@@ -295,14 +297,14 @@ if not exist %AppPath%\%PROGRAMVERSION%_settings.log (
   move %TEMP%\CIVM_AtlasViewer.ini  %APPDATA%\CIVM\AtlasViewer.ini
   if not "!DESTSETTINGS!"=="" (
     echo !DESTSETTINGS! > %AppPath%\%PROGRAMVERSION%_settings.log
-    @REM copy %~dp0Setup\Settings\AtlasViewer-GITVER.ini %APPDATA%\!DESTSETTINGS!
+    @REM copy %~dp0Components\Settings\AtlasViewer-GITVER.ini %APPDATA%\!DESTSETTINGS!
     @REM replace EXTENSION_PATH with %ExtPath%
     @REM this could be part of a solution, findstr /l /c:EXTENSION_PATH %ExtPath%
     @REM need to swap slashes in the path here
     set "ExtPathS=%ExtPath:\=/%"
     @REM echo converted %ExtPath% to !ExtPathS!
-    echo call %~dp0Setup\utils\find_and_replace %~dp0Setup\Settings\AtlasViewer-GITVER.ini EXTENSION_PATH !ExtPathS! %PROGRAMDATA%\CIVM\!DESTSETTINGS! >> "%LogPath%"
-    call %~dp0Setup\utils\find_and_replace %~dp0Setup\Settings\AtlasViewer-GITVER.ini EXTENSION_PATH !ExtPathS! %PROGRAMDATA%\CIVM\!DESTSETTINGS!
+    echo call %~dp0Components\utils\find_and_replace %~dp0Components\Settings\AtlasViewer-GITVER.ini EXTENSION_PATH !ExtPathS! %PROGRAMDATA%\CIVM\!DESTSETTINGS! >> "%LogPath%"
+    call %~dp0Components\utils\find_and_replace %~dp0Components\Settings\AtlasViewer-GITVER.ini EXTENSION_PATH !ExtPathS! %PROGRAMDATA%\CIVM\!DESTSETTINGS!
     @REM remove original now that we have a good one
     echo del %APPDATA%\CIVM\!DESTSETTINGS! >> "%LogPath%"
     del %APPDATA%\CIVM\!DESTSETTINGS!
@@ -342,11 +344,11 @@ if "%LibItemNumber%"=="" (
 )
 
 set "StartShortcut=%BaseInstallPath%\%LibItemString%%LibName%_a%PROGRAMVERSION%%DataVersionString%"
-echo %~dp0Setup\utils\shortcut.bat %InstallPath%\AtlasViewer.exe %InstallPath% InteractivePublishingDataViewer "--ndLibrary %DataPathAlt%/%LibIndex%" >>%LogPath%
+echo %~dp0Components\utils\shortcut.bat %InstallPath%\AtlasViewer.exe %InstallPath% InteractivePublishingDataViewer "--ndLibrary %DataPathAlt%/%LibIndex%" >>%LogPath%
 if not exist %StartShortcut%.lnk (
   echo Making lib link to %LibItemString%%LibName%
   echo continue in
-  call %~dp0Setup\utils\shortcut.bat %InstallPath%\AtlasViewer.exe %InstallPath% InteractivePublishingDataViewer "--ndLibrary %DataPathAlt%/%LibIndex%"
+  call %~dp0Components\utils\shortcut.bat %InstallPath%\AtlasViewer.exe %InstallPath% InteractivePublishingDataViewer "--ndLibrary %DataPathAlt%/%LibIndex%"
   echo move %InstallPath%\AtlasViewer.lnk %StartShortcut%.lnk >> %LogPath%
   move %InstallPath%\AtlasViewer.lnk %StartShortcut%.lnk
 )

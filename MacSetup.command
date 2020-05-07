@@ -13,12 +13,12 @@ astr="-macosx-amd64_";
 AppInstaller="${AppBundleName}$astr$PROGRAMVERSION.dmg";
 
 
-if [ ! -e "Setup/$AppInstaller" ] ; then 
-  echo "Setup application not found, quiting.";
-  echo "Missing \"Setup/$AppInstaller\"";
+if [ ! -e "Components/$AppInstaller" ] ; then
+  echo "Components application not found, quiting.";
+  echo "Missing \"Components/$AppInstaller\"";
   sleep 30
-  exit 
-else 
+  exit
+else
   echo "Proceeding with installer $AppInstaller";
 fi;
 
@@ -54,7 +54,7 @@ if [ ! -w "$InstallParent" ]; then
   osascript -e "do shell script  \"chmod a+rwx $InstallParent \" with administrator privileges"
   if [ ! -f $PermFile ]; then
       echo "Saving perms to $PerMFile";
-      echo 'echo $correct_perms > $PermFile;' >> $TMPLOG ; 
+      echo 'echo $correct_perms > $PermFile;' >> $TMPLOG ;
       echo $correct_perms > $PermFile;
   fi;
 fi
@@ -66,10 +66,10 @@ fi
 rm=`which rm`;
 
 AppUpdate=0;
-if [ -d $AppPath ]; then 
+if [ -d $AppPath ]; then
   iAppBundleName=$(grep "^AppBundleName=.*$" "$AppPath/bundle_name.info"|tail -n 1|cut -d '=' -f2);
   iPROGRAMVERSION=$(grep "^PROGRAMVERSION=.*$" "$AppPath/bundle_name.info"|tail -n 1|cut -d '=' -f2);
-  if [ "$iAppBundleName" = "$AppBundleName" -a "$PROGRAMVERSION" = "$iPROGRAMVERSION" ]; then 
+  if [ "$iAppBundleName" = "$AppBundleName" -a "$PROGRAMVERSION" = "$iPROGRAMVERSION" ]; then
     echo "WARNING: Repeated install may cause error!";
     #exit;
   else
@@ -105,18 +105,18 @@ if [ -d $AppPath ];then
         exit 1;
     fi
     echo "App exists and is up to date, not reinstalling";
-else 
+else
   #
   # (Re)Install application.
   #
   dt='';
   if [ ! -w "$PWD" ]; then
     echo "Cant use this directory for setup! Will use home.";
-    dt="$HOME/"; # If we cant write here, then re-create in home dir. 
+    dt="$HOME/"; # If we cant write here, then re-create in home dir.
   fi;
   # remove old lic pass installer.
   if [ -f $dt.LIC_ACCEPT.cdr ];then
-      if [ $dt.LIC_ACCEPT.cdr -ot Setup/$AppInstaller -o $AppUpdate -eq 1 ]; then
+      if [ $dt.LIC_ACCEPT.cdr -ot Components/$AppInstaller -o $AppUpdate -eq 1 ]; then
 	  echo "Removing old installer cache...";
 	  echo "rm $dt.LIC_ACCEPT.cdr" >>$TMPLOG;
 	  rm $dt.LIC_ACCEPT.cdr;
@@ -124,10 +124,10 @@ else
   fi;
   if [ ! -f $dt.LIC_ACCEPT.cdr ]; then # bludgeon the license stuff.
     echo "Preparing installer ... please wait";
-    echo "hdiutil convert -quiet \"Setup/$AppInstaller\" -format UDTO -o $dt.LIC_ACCEPT" >>$TMPLOG;
-    hdiutil convert -quiet "Setup/$AppInstaller" -format UDTO -o $dt.LIC_ACCEPT
+    echo "hdiutil convert -quiet \"Components/$AppInstaller\" -format UDTO -o $dt.LIC_ACCEPT" >>$TMPLOG;
+    hdiutil convert -quiet "Components/$AppInstaller" -format UDTO -o $dt.LIC_ACCEPT
   fi;
-  
+
   echo "hdiutil attach -quiet -nobrowse -noverify -noautoopen -mountpoint .AppImg $dt.LIC_ACCEPT.cdr" >>$TMPLOG;
   hdiutil attach -quiet -nobrowse -noverify -noautoopen -mountpoint .AppImg $dt.LIC_ACCEPT.cdr
 
@@ -186,7 +186,7 @@ fi;
 # Find all v* folders get last one(alphabetically).
 DATAVERSION=$(find "$DataPath/$LibIndex" -iname "v*" -exec basename {} \;  |tail -n 1);
 
-if [ "X_$DATAVERSION" = "X_" ]; then 
+if [ "X_$DATAVERSION" = "X_" ]; then
     echo "Data library Not versioned by folder or version failed to set. Only vYYYY-MM-DD type versions supported."
 fi
 
@@ -210,13 +210,13 @@ else
     echo " No existing data. Great!";
 fi;
 
-if [ ! -f "$idx_LibConf" ]; then 
+if [ ! -f "$idx_LibConf" ]; then
   echo "cp -p \"$DataPath/$LibIndex/$DATAVERSION/lib.conf\" \"$idx_LibConf\"">>$LogPath;
   cp -p  "$DataPath/$LibIndex/$DATAVERSION/lib.conf" "$idx_LibConf";
-  if [ -f "$idx_LibConf" ]; then 
+  if [ -f "$idx_LibConf" ]; then
     echo # insert lib path line "Path=$DATAVERSION" into $idx_LibConf>> "$LogPath"
     #if no Path= in file, add Path= to file
-    if [ $(grep -c "^Path=.*$" "$idx_LibConf") -eq 0 ]; then 
+    if [ $(grep -c "^Path=.*$" "$idx_LibConf") -eq 0 ]; then
       echo '' >> $idx_LibConf;
       echo "# Adding Path line \"Path=$DATAVERSION\" into $idx_LibConf" >> $LogPath
       echo "Path=$DATAVERSION">> "$idx_LibConf";
@@ -227,20 +227,20 @@ if [ ! -f "$idx_LibConf" ]; then
     fi
   else
     echo "ERROR setting up lib! missing \"$idx_LibConf\"!" >> $LogPath
-    echo "ERROR setting up lib! missing \"$idx_LibConf\"!" 
+    echo "ERROR setting up lib! missing \"$idx_LibConf\"!"
   fi
 fi
 # Get LibName and Version from lib.conf for use with the program shortcut.
 # put Version into DATAVERSION
 #
-if [ -f $idx_LibConf ]; then 
+if [ -f $idx_LibConf ]; then
   # Get true lib name from file $idx_LibConf
   # Also grab version if its in there.
   if [ $(grep -c "^LibName=.*$" "$idx_LibConf") -ge 1 ] ; then
     LibName=$(grep "^LibName=.*$" "$idx_LibConf"|tail -n 1|cut -d '=' -f2);
   else
     echo "LibName is NOT defined in $idx_LibConf";
-    LibName=$LibIndex;  
+    LibName=$LibIndex;
   fi
   if [ $(grep -c "^Version=.*$" "$idx_LibConf") -ge 1 ] ; then
     Version=$(grep "^Version=.*$" "$idx_LibConf"|tail -n 1|cut -d '=' -f2);
@@ -249,10 +249,10 @@ if [ -f $idx_LibConf ]; then
     echo "Version is NOT defined in $idx_LibConf";
   fi
 fi
-  
+
 # Move data uninstaller list to better name
 # sort out available name/details for shortcut
-if [ "X_$DATAVERSION" = "X_" ]; then 
+if [ "X_$DATAVERSION" = "X_" ]; then
   echo Version info not set on lib.
   echo "mv $DataUninst \"$DataPath/Uninstall_$LibItemNumber.list\"" >> $LogPath;
   mv $DataUninst "$DataPath/Uninstall_$LibItemNumber.list"
@@ -273,7 +273,7 @@ echo "find $BaseInstallPath -type d -exec chmod a+rx {} \;" >> $LogPath;
 find $BaseInstallPath -type d -exec chmod a+rx {} \;
 
 echo "find $BaseInstallPath -type f -exec chmod a+r {} \;" >> $LogPath;
-find $BaseInstallPath -type f -exec chmod a+r {} \; 
+find $BaseInstallPath -type f -exec chmod a+r {} \;
 
 if [ "X_$LibItemNumber" = "X_" ]; then
   echo LibItemNumber Missing!
@@ -289,17 +289,17 @@ StartShortcut="/Applications/$ShortcutName.app";
 StartShortcut_sh="$BaseInstallPath/$ShortcutName.sh";
 if [ ! -d $StartShortcut ]; then
   echo "Making lib link to $LibItemString$LibName \"$ShortcutName\""
-  if [ ! -d "$BaseInstallPath/$ShortcutName.app"  ]; then 
+  if [ ! -d "$BaseInstallPath/$ShortcutName.app"  ]; then
     echo "#!/bin/sh" > $StartShortcut_sh;
     echo "open $BaseInstallPath --args --ndLibrary \"$DataPath/$LibIndex\"" >> $StartShortcut_sh;
-    #Setup/util/appify.sh your-shell-script.sh "Your App Name"
+    #Components/util/appify.sh your-shell-script.sh "Your App Name"
     echo "pushd $PWD">>$LogPath;
     setupdir=$PWD;
     pushd $PWD;
     echo "cd $BaseInstallPath" >> $LogPath;
     cd $BaseInstallPath;
-    echo "Setup/util/appify.sh \"$ShortcutName\" \"$ShortcutName\"">>$LogPath;
-    $setupdir/Setup/util/appify.sh "$ShortcutName.sh" "$ShortcutName";
+    echo "Components/util/appify.sh \"$ShortcutName\" \"$ShortcutName\"">>$LogPath;
+    $setupdir/Components/util/appify.sh "$ShortcutName.sh" "$ShortcutName";
     echo "$rm \"$ShortcutName.sh\"" >> $LogPath;
     $rm "$ShortcutName.sh";
     echo "popd">>$LogPath;
@@ -307,7 +307,7 @@ if [ ! -d $StartShortcut ]; then
   fi;
   echo "mv $BaseInstallPath/$ShortcutName.app $StartShortcut" >> $LogPath;
   mv "$BaseInstallPath/$ShortcutName.app" "$StartShortcut";
-  
+
   echo find $StartShortcut -exec chmod a+rx {} \; >> $LogPath;
   find $StartShortcut -exec chmod a+rx {} \; ;
 fi
@@ -317,9 +317,9 @@ echo "osascript -e \"do shell script  \\\"chmod $correct_perms $InstallParent \\
 osascript -e "do shell script  \"chmod $correct_perms $InstallParent \" with administrator privileges";
 
 cur_perms=$(stat -f %Mp%Lp $InstallParent);
-# becaiuse these are octal -eq would also have worke.d 
+# becaiuse these are octal -eq would also have worke.d
 if [ "$cur_pemrs" == "$correct_perms" ]; then
-    if [ -f $PermFile ]; then 
+    if [ -f $PermFile ]; then
         $rm $PermFile;
     fi
 else

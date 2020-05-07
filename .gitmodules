@@ -1,3 +1,3 @@
-[submodule "Setup/utils"]
+[submodule "Components/utils"]
 	path = Components/utils
 	url = git@github.com:jamesjcook/windows_batch_utils
