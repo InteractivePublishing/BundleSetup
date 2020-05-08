@@ -42,8 +42,7 @@ From here, continue along the tool bar menus at the top from left to right.
       (scalar slices, labels, etc.)
     -"3D" displays and interacts with 3D data
       (3D volumes, tracts, 3D labels, etc.)
-"Labels" opens the listing of labels
-[The viewer crashed and then started freezing upon relaunch at this point]
+"Labels" opens the listing of labels and allows you to turn individual lables on/off by clicking the image
 
 
 Advanced users can access the full 3D Slicer functionality by right clicking
