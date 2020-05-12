@@ -354,14 +354,18 @@ if not exist %StartShortcut%.lnk (
 )
 echo Continuing in ...
 timeout 6
-cls
 
+
+goto Flasher
 @REM Give user a summary.
+:CompleteShow
+cls
+echo It is now safe to close this window
 echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 echo Setup complete.
 echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 echo Log file saved to %LogPath%.
-echo Shortcut to Viewer and data is
+echo To start program use shortcut
 echo %StartShortcut%
 echo.
 echo To uninstall data, delete data folder. WARNING THIS ELIMINATES ALL LIBRARIES.
@@ -370,5 +374,39 @@ echo To uninstall application, find the uninstall shortcut from startmenu,
 echo   OR
 echo run %AppPath%\Uninstall%PROGRAMVERSION%.bat
 echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-timeout 3600
+EXIT /B 0
+
+goto Flasher
+
+:CompleteHide
+cls
+echo It is now safe to close this window
+echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+echo Setup complete.
+echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+echo Log file saved to %LogPath%.
+echo To start program use shortcut
+echo.
+echo.
+echo To uninstall data, delete data folder. WARNING THIS ELIMINATES ALL LIBRARIES.
+echo   %DataPath%
+echo To uninstall application, find the uninstall shortcut from startmenu,
+echo   ^OR
+echo run %AppPath%\Uninstall%PROGRAMVERSION%.bat
+echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+EXIT /B 0
+
+goto Flasher
+
+:Flasher
+@REM FOR /L %variable IN (start,step,end) DO command [command-parameters]
+
+FOR /L %%v IN (1,1,3600) DO (
+  call :CompleteShow
+  ping localhost -n 3 >nul
+  call :CompleteHide
+  ping localhost -n 1 >nul
+)
+call :CompleteShow
+
 exit /b
