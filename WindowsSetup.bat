@@ -3,9 +3,14 @@ setlocal enableDelayedExpansion
 
 
 set "SetupDir=%~dp0"
-@REM 8.3 setup path
-for %%A in ("%SetupDir%") do set "SetupDir=%%~sA"
+@REM 8.3 setup path EXCEPT MICROSOFT DISABLED THIS
+@REM for %%A in ("%SetupDir%") do set "SetupDir=%%~sA" & echo %%~sA
+call %~dp0\Components\utils\shortname.bat "%SetupDir%"
+set SetupDir=%SHORTNAME%
 
+echo "%SetupDir%"
+timeout 30
+exit /b
 REM for /f "tokens=2" %%a in ("%~df0") do (
     REM echo folder path contains space, setup cannot continue, quiting in a few seconds ...
     REM timeout /t 8
@@ -21,8 +26,10 @@ SET "LogPath=%BaseInstallPath%\install.log"
 @REM set "SlicerPath=c:\Program Files\Slicer\Slicer.exe"
 @REM set "SlicerPath=C:\Program Files\Mozilla Firefox\firefox.exe"
 set "SlicerPath=D:\CIVM_Apps\Slicer\4.11.0-2020-09-25\Slicer.exe"
-@REM 8.3 program path
-for %%A in ("%SlicerPath%") do set "SlicerPath=%%~sA"
+@REM 8.3 program path EXCEPT MICROSOFT DISABLED THIS
+@REM for %%A in ("%SlicerPath%") do set "SlicerPath=%%~sA"
+call %~dp0\Components\utils\shortname.bat "%SlicerPath%"
+set SlicerPath=%SHORTNAME%
 
 set "DataPath=%BaseInstallPath%"
 set "DataUninst=%DataPath%\%LibItemNumber%_tempuninst.list"
