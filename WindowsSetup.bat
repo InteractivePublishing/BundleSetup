@@ -2,9 +2,11 @@
 setlocal enableDelayedExpansion
 
 for /f "tokens=2" %%a in ("%~df0") do (
-    echo folder path vontains space, setup cannot continue
+    echo folder path contains space, setup cannot continue, quiting in a few seconds ...
+    timeout /t 8
     exit /b
 )
+set SetupDir=%~dp0
 
 SET BaseInstallPath=%~dp0
 IF %BaseInstallPath:~-1%==\ SET BaseInstallPath=%BaseInstallPath:~0,-1%
@@ -12,10 +14,14 @@ IF %BaseInstallPath:~-1%==\ SET BaseInstallPath=%BaseInstallPath:~0,-1%
 @REM Set logging path.
 SET "LogPath=%BaseInstallPath%\install.log"
 @REM TODO: Prompt user for path to slicer.exe
-set "SlicerPath=c:\Program Files\Slicer\Slicer.exe"
+@REM set "SlicerPath=c:\Program Files\Slicer\Slicer.exe"
+set "SlicerPath=C:\Program Files\Mozilla Firefox\firefox.exe"
 
 set "DataPath=%BaseInstallPath%"
 set "DataUninst=%DataPath%\%LibItemNumber%_tempuninst.list"
+
+for /D %%i in (%DataPath%) do SET "DataVersionString=%%~ni"
+
 
 echo Open Install log  >> "%LogPath%"
 date /T  >> "%LogPath%"
@@ -30,14 +36,13 @@ if not exist %idx_LibConf% (
 )
 
 
-
 set "StartShortcut=%BaseInstallPath%\StartSlicer_with_%DataVersionString%"
-echo %~dp0Components\utils\shortcut.bat %SlicerPath% --python-script "%~dp0%DataVersionString%.py" >>%LogPath%
-if not exist %StartShortcut%.lnk (
+echo %SetupDir%Components\utils\shortcut.bat "%SlicerPath%" "%BaseInstallPath%" %DataVersionString% "--python-script ^"%SetupDir%%DataVersionString%.py^"" >>%LogPath%
+if not exist "%StartShortcut%.lnk" (
   echo Making lib link to %DataVersionString%
-  call %~dp0Components\utils\shortcut.bat %SlicerPath% --python-script "%~dp0%DataVersionString%.py"
-  echo move %InstallPath%\Slicer.lnk %StartShortcut%.lnk >> %LogPath%
-  move %InstallPath%\Slicer.lnk %StartShortcut%.lnk
+  call %~dp0Components\utils\shortcut.bat "%SlicerPath%" "%BaseInstallPath%" %DataVersionString% "--python-script ^"%SetupDir%%DataVersionString%.py^""
+  echo move "%BaseInstallPath%\Slicer.lnk" "%StartShortcut%.lnk" >> %LogPath%
+  move "%BaseInstallPath%\Slicer.lnk" "%StartShortcut%.lnk"
 )
 echo Continuing in ...
 timeout 6
