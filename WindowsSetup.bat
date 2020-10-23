@@ -75,7 +75,7 @@ echo Log file saved to %LogPath%.
 echo To start program use shortcut
 echo %StartShortcut%
 echo.
-echo To uninstall data, delete data folder. WARNING THIS ELIMINATES ALL LIBRARIES.
+echo To uninstall this package, simply delete folder.
 echo   %DataPath%
 echo.
 echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -93,7 +93,7 @@ echo Log file saved to %LogPath%.
 echo To start program use shortcut
 echo.
 echo.
-echo To uninstall data, delete data folder. WARNING THIS ELIMINATES ALL LIBRARIES.
+echo To uninstall this package, simply delete folder.
 echo   %DataPath%
 echo.
 echo :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
