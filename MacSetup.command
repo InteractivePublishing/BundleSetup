@@ -37,7 +37,7 @@ fi
 # Create shortcut app.
 #
 # PyStart=$DataVersionString.py
-PyStart=ndLibrarySupport\Testing\DistStart.py
+PyStart=ndLibrarySupport/Testing/DistStart.py
 
 ShortcutName="StartSlicer_with_$DataVersionString";
 
