@@ -6,7 +6,7 @@ SetupDir="$SCRIPTPATH"
 BaseInstallPath="$SetupDir";
 LogPath="$BaseInstallPath/install.log";
 
-SlicerCount=$(ls -dtr /Applications|grep -cE '.*Slicer.*[.]app')
+SlicerCount=$(ls -tr /Applications/ | grep -cE '.*Slicer.*[.]app')
 SlicerPath=$(ls -dtr /Applications/*Slicer*.app|tail -n1)
 if [ "$SlicerCount" -eq 0 ];then
     echo "3D slicer not found in /Applications, Please install Slicer first. Otherwise manually create your start shortcut"
