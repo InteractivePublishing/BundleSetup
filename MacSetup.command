@@ -9,10 +9,18 @@ LogPath="$BaseInstallPath/install.log";
 SlicerCount=$(ls -tr /Applications/ | grep -cE '.*Slicer.*[.]app')
 SlicerPath=$(ls -dtr /Applications/*Slicer*.app|tail -n1)
 if [ "$SlicerCount" -eq 0 ];then
+    echo ""
+    echo ""
     echo "3D slicer not found in /Applications, Please install Slicer first. Otherwise manually create your start shortcut"
+    echo ""
+    echo ""
     exit 1;
 elif [ "$SlicerCount" -gt 1 ];then
-    echo "Using newest 3D Slicer found: $SlicerPath, To use alternate use manual instructions"
+    echo ""
+    echo ""
+    echo "Using newest 3D Slicer found: $SlicerPath, To use alternate see HELP file for hints manual instructions"
+    echo ""
+    echo ""
 fi;
 
 DataPath="$BaseInstallPath";
