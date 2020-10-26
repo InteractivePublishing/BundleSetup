@@ -36,6 +36,9 @@ fi
 #
 # Create shortcut app.
 #
+# PyStart=$DataVersionString.py
+PyStart=ndLibrarySupport\Testing\DistStart.py
+
 ShortcutName="StartSlicer_with_$DataVersionString";
 
 StartShortcut="$BaseInstallPath/$ShortcutName.app";
@@ -44,7 +47,7 @@ if [ ! -d $StartShortcut ]; then
   echo "Making lib link to $DataVersionString"
   if [ ! -d "$BaseInstallPath/$ShortcutName.app"  ]; then
     echo "#!/bin/sh" > $StartShortcut_sh;
-    echo "open $BaseInstallPath --args --ndLibrary \"$DataPath/$LibIndex\"" >> $StartShortcut_sh;
+    echo "open $SlicerPath --args --python-script \"$DataPath/$PyStart\"" >> $StartShortcut_sh;
     #Components/util/appify.sh your-shell-script.sh "Your App Name"
     chmod a+rx $StartShortcut_sh
     chmod go-w $StartShortcut_sh
@@ -52,17 +55,17 @@ if [ ! -d $StartShortcut ]; then
     pushd $PWD;
     echo "cd $BaseInstallPath" >> $LogPath;
     cd $BaseInstallPath;
-    echo "Components/util/appify.sh \"$ShortcutName\" \"$ShortcutName\"">>$LogPath;
-    $SetupDir/Components/util/appify.sh "$ShortcutName.sh" "$ShortcutName";
+    echo "Components/utils/appify.sh \"$ShortcutName\" \"$ShortcutName\"">>$LogPath;
+    $SetupDir/Components/utils/appify.sh "$ShortcutName.sh" "$ShortcutName";
     echo "$rm \"$ShortcutName.sh\"" >> $LogPath;
     $rm "$ShortcutName.sh";
     echo "popd">>$LogPath;
     popd;
+  else
+        echo "Existing $BaseInstallPath/$ShortcutName.app, not re-creating";
   fi;
-  echo "mv $BaseInstallPath/$ShortcutName.app $StartShortcut" >> $LogPath;
-  mv "$BaseInstallPath/$ShortcutName.app" "$StartShortcut";
-  echo find $StartShortcut -exec chmod a+rx {} \; >> $LogPath;
-  find $StartShortcut -exec chmod a+rx {} \; ;
+  echo find $BaseInstallPath/$ShortcutName.app -exec chmod a+rx {} \; >> $LogPath;
+  find $BaseInstallPath/$ShortcutName.app -exec chmod a+rx {} \;
 fi
 
 
