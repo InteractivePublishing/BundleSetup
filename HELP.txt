@@ -17,11 +17,10 @@ Slicer convention places object left on image right.
 Enabling/Disabling all labels is slow.
 
 NOTE: Tractography only avalable for some data bundles.
-Look for tractography.mrml in the component data bundles.
+Look for tractography.mrml in the component data bundles and load to add
+track data.
 Tractography display and differentation is difficult.
 When enabling a new streamline set, we recommend disabling the previous one first.
-If you forget, you will have to click a second time on the new streamline set,
-and the previous one will still be marked as visible.
 
 Installation:
 If the setup scripts fail they're relatively simple, you can use the slicer
@@ -29,3 +28,12 @@ documentation to find out how to add the important slicer start option
 --python-script "bundlePath/ndLibrarySupport/Testing/DistStart.py"
 Replace bundlepath with the full path to the bundle folder.
 
+First Launch on Mac
+Mac security settings may prevent slicer from launching.
+Playing with security settings is not recommended.
+Downloading an earlier release of slicer may work.
+Our code is known to work on version 4.10 and newer.
+It may work on older versions as well.
+If you want to patch the security problem, you may use the following terminal
+command (ensure you're using the proper slicer path if it is not the default):
+sudo xattr -dr com.apple.quarantine /Applications/Slicer.app
