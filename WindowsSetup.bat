@@ -26,6 +26,8 @@ IF %BaseInstallPath:~-1%==\ SET BaseInstallPath=%BaseInstallPath:~0,-1%
 
 @REM Set logging path.
 SET "LogPath=%BaseInstallPath%\install.log"
+
+echo "Select Slicer.exe in pop up window"
 @REM TODO: Prompt user for path to slicer.exe
 call %~dp0\Components\utils\file_select.bat
 set "SlicerPath=%FILEPATH%"
