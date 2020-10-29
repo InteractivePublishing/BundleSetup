@@ -16,6 +16,16 @@ Slicer convention places object left on image right.
 
 Enabling/Disabling all labels is slow.
 
+Initial contrast setting is often poor. To address, click and drag with the
+mouse to change contrast/brightness. In new versions of 3D slicer you must
+firsy change the mouse interactor mode.
+
+When loading a tractography scene or switching layouts in newer slicer
+versions, the mouse interactor is reset to manipulation only mode instad of
+contrast/brightness.
+The mouse interaction toolbar needs to be enabled from the view menu to switch
+it back.
+
 NOTE: Tractography only avalable for some data bundles.
 Look for tractography.mrml in the component data bundles and load to add
 track data. (Dragging the tractography.mrml file on to the open
@@ -23,6 +33,9 @@ window is probably easiest.)
 Tractography display and differentation is difficult.
 When enabling a new streamline set, we recommend disabling the previous one first.
 Tractography requires SlicerDMRI extension.
+
+3D display doesnt show labels. Advanced users may examine the documentation of
+the segmentations module to see how to view labels in 3D
 
 Installation:
 If the setup scripts fail they're relatively simple, you can use the slicer
