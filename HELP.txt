@@ -6,8 +6,8 @@ https://www.slicer.org/wiki/Documentation/4.10
 
 HINT: Hold the shift key on your keyboard and experiment with your mouse.
 
-Advanced users can access the full 3D Slicer functionality by right clicking
-on the main toolbar, and enabling the parts you're looking for.
+Advanced users can access the full 3D Slicer functionality by clicking on the
+view menu and enabling the parts which have been shut off.
 
 Limitations and Known issues:
 First load of data is slow, windows may offer to close the program for you.
@@ -18,15 +18,24 @@ Enabling/Disabling all labels is slow.
 
 NOTE: Tractography only avalable for some data bundles.
 Look for tractography.mrml in the component data bundles and load to add
-track data.
+track data. (Dragging the tractography.mrml file on to the open
+window is probably easiest.)
 Tractography display and differentation is difficult.
 When enabling a new streamline set, we recommend disabling the previous one first.
+Tractography requires SlicerDMRI extension.
 
 Installation:
 If the setup scripts fail they're relatively simple, you can use the slicer
 documentation to find out how to add the important slicer start option
 --python-script "bundlePath/ndLibrarySupport/Testing/DistStart.py"
 Replace bundlepath with the full path to the bundle folder.
+
+The setup scripts don't work if there are spaces or special characters in the path.
+On Macs if you extract the bundle twice you'll have both.
+To resolve:
+Delete previous copies of the zip file, and the extracted directories.
+Rename the latest zip file, and directory removing spaces or parenthesis.
+DoubleClick mac setup to try again
 
 First Launch on Mac
 Mac security settings may prevent slicer from launching.
