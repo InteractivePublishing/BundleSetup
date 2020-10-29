@@ -30,13 +30,13 @@ DataPath="$BaseInstallPath";
 #
 DataVersionString=$(basename "$DataPath");
 
-echo "Start install log" > $LogPath;
-date -j >> $LogPath;
+echo "Start install log" > "$LogPath";
+date -j >> "$LogPath";
 
 rm=`which rm`;
 
 idx_LibConf="$BaseInstallPath/lib.conf";
-if [ ! -f $idx_LibConf ]; then
+if [ ! -f "$idx_LibConf" ]; then
   echo ERROR setting up lib, missing "$idx_LibConf"
   echo ERROR setting up lib, missing "$idx_LibConf">> "$LogPath"
 fi
@@ -51,29 +51,29 @@ ShortcutName="StartSlicer_with_$DataVersionString";
 
 StartShortcut="$BaseInstallPath/$ShortcutName.app";
 StartShortcut_sh="$BaseInstallPath/$ShortcutName.sh";
-if [ ! -d $StartShortcut ]; then
+if [ ! -d "$StartShortcut" ]; then
   echo "Making lib link to $DataVersionString"
   if [ ! -d "$BaseInstallPath/$ShortcutName.app"  ]; then
-    echo "#!/bin/sh" > $StartShortcut_sh;
-    echo "open $SlicerPath --args --python-script \"$DataPath/$PyStart\"" >> $StartShortcut_sh;
+    echo "#!/bin/sh" > "$StartShortcut_sh";
+    echo "open $SlicerPath --args --python-script \"$DataPath/$PyStart\"" >> "$StartShortcut_sh";
     #Components/util/appify.sh your-shell-script.sh "Your App Name"
-    chmod a+rx $StartShortcut_sh
-    chmod go-w $StartShortcut_sh
-    echo "pushd $PWD">>$LogPath;
-    pushd $PWD;
-    echo "cd $BaseInstallPath" >> $LogPath;
-    cd $BaseInstallPath;
-    echo "Components/utils/appify.sh \"$ShortcutName\" \"$ShortcutName\"">>$LogPath;
-    $SetupDir/Components/utils/appify.sh "$ShortcutName.sh" "$ShortcutName";
-    echo "$rm \"$ShortcutName.sh\"" >> $LogPath;
+    chmod a+rx "$StartShortcut_sh"
+    chmod go-w "$StartShortcut_sh"
+    echo "pushd $PWD">>"$LogPath";
+    pushd "$PWD";
+    echo "cd $BaseInstallPath" >> "$LogPath";
+    cd "$BaseInstallPath";
+    echo "Components/utils/appify.sh \"$ShortcutName\" \"$ShortcutName\"">>"$LogPath";
+    "$SetupDir/Components/utils/appify.sh" "$ShortcutName.sh" "$ShortcutName";
+    echo "$rm \"$ShortcutName.sh\"" >> "$LogPath";
     $rm "$ShortcutName.sh";
-    echo "popd">>$LogPath;
+    echo "popd">>"$LogPath";
     popd;
   else
         echo "Existing $BaseInstallPath/$ShortcutName.app, not re-creating";
   fi;
-  echo find $BaseInstallPath/$ShortcutName.app -exec chmod a+rx {} \; >> $LogPath;
-  find $BaseInstallPath/$ShortcutName.app -exec chmod a+rx {} \;
+  echo find $BaseInstallPath/$ShortcutName.app -exec chmod a+rx {} \; >> "$LogPath";
+  find "$BaseInstallPath/$ShortcutName.app" -exec chmod a+rx {} \;
 fi
 
 
