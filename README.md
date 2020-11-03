@@ -11,5 +11,3 @@ If we get the busybox idea finished, it'll require msys2's
 runtime+busybox+winln extracted together in one folder and given the basic
 msys2_bbsetup.
 
-setup_vars.txt is a template for the params we're respecting in our setup
-bundles.
