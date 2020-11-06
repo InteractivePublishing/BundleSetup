@@ -53,6 +53,16 @@ You can switch between the default 3D slicer layouts or customizations using
 the view menu and selecting layouts.
 The custom views are designated with a Green Arrow.
 
+Some layouts have a "load" panel for data which is not part of the bundle.
+This allows arbitrary data to integrate with the simplified intterface.
+
+Only a limited selection of data files have been tested and confirmed to work
+well in this "load" panel. 2D images of nrrd/nhdr, png, tiff, nifti, or jpeg
+work are known to work.
+3D slicer supports a wide range of images, and data formats which may also
+work.
+
+
 Some data bundles require additional slicer modules. The viewer code will
 check for them and prompt the user.
 
