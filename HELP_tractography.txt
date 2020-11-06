@@ -1,0 +1,16 @@
+HELP suppliment tractography. For best viewing on windows, open with wordpad.
+Tractography is not fully integrated.
+
+NOTE: Tractography only avalable for some data bundles.
+
+Tractography display and differentation is difficult.
+When enabling a new streamline set, we recommend disabling the previous one first.
+Tractography requires SlicerDMRI extension.
+
+Loading a tractography scene is another condition which can reset the mouse
+interactor to manipulation only mode instad of contrast/brightness.
+The mouse interaction toolbar (from the view menu) needs to be enabled to switch
+it back.
+
+3D display doesnt show labels. Advanced users may examine the documentation of
+the segmentations module to see how to view labels in 3D

@@ -1,5 +1,5 @@
- For best viewing on windows, open with wordpad.
-Use:
+For best viewing on windows, open with wordpad.
+**** Use ****
 See Getting Started Document.
 Full documentation on Slicer, visit
 https://www.slicer.org/wiki/Documentation/4.10
@@ -10,7 +10,7 @@ HINT: Hold the shift key on your keyboard and experiment with your mouse.
 Advanced users can access the full 3D Slicer functionality by clicking on the
 view menu and enabling the parts which have been shut off.
 
-Limitations and Known issues:
+**** Limitations and Known issues ****
 First load of data is slow, windows may offer to close the program for you.
 
 Slicer convention places object left on image right.
@@ -21,31 +21,19 @@ Initial contrast setting is often poor. To address, click and drag with the
 mouse to change contrast/brightness. In new versions of 3D slicer you may
 need to change the mouse interactor mode.
 
-Tractography:
-NOTE: Tractography only avalable for some data bundles.
-Look for tractography.mrml in the component data bundles and load to add
-track data. (Dragging the tractography.mrml file on to the open
-window is probably easiest.)
-Tractography display and differentation is difficult.
-When enabling a new streamline set, we recommend disabling the previous one first.
-Tractography requires SlicerDMRI extension.
-
-When loading a tractography scene or switching layouts in newer slicer
-versions, the mouse interactor is reset to manipulation only mode instad of
-contrast/brightness.
+When switching layouts in newer slicer versions, or on loading data without
+using the special viewer drop down menus, the mouse interactor may be reset to
+manipulation only mode instad of contrast/brightness.
 The mouse interaction toolbar needs to be enabled from the view menu to switch
 it back.
 
-3D display doesnt show labels. Advanced users may examine the documentation of
-the segmentations module to see how to view labels in 3D
-
-Code updates:
+**** Code updates ****
 the ndLibrarySupport code is published on the web on github.
 If you have git installed you can update the copy of code in your bundle with
 normal git commands. ** Highly recommend tagging your verison first.
 We welcome community contributions, fork and issue pull request.
 
-Installation:
+**** Installation ****
 If the setup scripts fail they're relatively simple, you can use the slicer
 documentation to find out how to add the important slicer start option
 --python-script "bundlePath/ndLibrarySupport/Testing/DistStart.py"
