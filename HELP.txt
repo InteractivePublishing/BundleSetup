@@ -11,6 +11,9 @@ Advanced users can access the full 3D Slicer functionality by clicking on the
 view menu and enabling the parts which have been shut off.
 
 **** Limitations and Known issues ****
+On Mac OS the shortcut may fail to start if 3D slicer is currently open.
+Close existing copies of 3D slicer before trying the shortcut.
+
 First load of data is slow, windows may offer to close the program for you.
 
 Slicer convention places object left on image right.
