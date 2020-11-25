@@ -63,8 +63,8 @@ if [ ! -d "$StartShortcut" ]; then
     pushd "$PWD";
     echo "cd $BaseInstallPath" >> "$LogPath";
     cd "$BaseInstallPath";
-    echo "Components/utils/appify.sh \"$ShortcutName\" \"$ShortcutName\"">>"$LogPath";
-    "$SetupDir/Components/utils/appify.sh" "$ShortcutName.sh" "$ShortcutName";
+    echo "bash Components/utils/appify.sh \"$ShortcutName\" \"$ShortcutName\"">>"$LogPath";
+    bash "$SetupDir/Components/utils/appify.sh" "$ShortcutName.sh" "$ShortcutName";
     echo "$rm \"$ShortcutName.sh\"" >> "$LogPath";
     $rm "$ShortcutName.sh";
     echo "popd">>"$LogPath";
